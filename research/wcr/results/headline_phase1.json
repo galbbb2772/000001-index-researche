@@ -1,0 +1,57 @@
+{
+  "version": "WCR_PHASE1_V1",
+  "universe": "seasoned180",
+  "formation_years": "2010-2024",
+  "next_year_outcomes": "2011-2025",
+  "transition_observations": 44672,
+  "D10": {
+    "next_mean_return": 0.0668188164,
+    "next_median_return": -0.0617767659,
+    "p_next_D1": 0.1877532643,
+    "p_next_D1_D2": 0.3228275552,
+    "p_next_D10": 0.1109860423,
+    "p_crash_30": 0.2062134174,
+    "p_crash_50": 0.0407474111,
+    "delist_next_rate": 0.0034386417
+  },
+  "baseline": {
+    "p_next_D1": 0.0915338467,
+    "p_next_D1_D2": 0.1873433023,
+    "p_crash_30": 0.1373567335,
+    "p_crash_50": 0.0203483166
+  },
+  "lift": {
+    "D10_to_D1": 2.05118949,
+    "D10_to_D1_D2": 1.72318706,
+    "crash30": 1.5012982,
+    "crash50": 2.00249543
+  },
+  "predictability": {
+    "auc_future_bottom_from_past_strength": 0.5697560586,
+    "auc_future_bottom_cluster_bootstrap_ci95": [
+      0.5315,
+      0.6136
+    ],
+    "auc_future_top_from_past_weakness": 0.4961789775,
+    "auc_future_top_cluster_bootstrap_ci95": [
+      0.4614,
+      0.5282
+    ],
+    "auc_asymmetry_diff": 0.0757,
+    "auc_asymmetry_diff_cluster_bootstrap_ci95": [
+      0.0463,
+      0.107
+    ]
+  },
+  "forward_2025_to_2026_ytd": {
+    "cutoff": "2026-09-24",
+    "status": "FORWARD_ONLY_NOT_FOR_MODEL_SELECTION",
+    "D10_n": 510,
+    "D10_mean_ytd": 0.0927595221,
+    "D10_median_ytd": -0.1223300065,
+    "D10_to_ytd_D1": 0.2352941176,
+    "D10_to_ytd_D1_D2": 0.3431372549,
+    "D10_to_ytd_D10": 0.1921568627,
+    "D10_crash30": 0.2980392157
+  }
+}
