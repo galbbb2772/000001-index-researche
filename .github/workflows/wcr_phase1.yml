@@ -1,19 +1,17 @@
 name: WCR Phase 1 Inspect A-Share DB
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "research/wcr/**"
-      - ".github/workflows/wcr_phase1.yml"
+  issues:
+    types: [opened]
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: read
 
 jobs:
   inspect:
+    if: startsWith(github.event.issue.title, 'WCR-RUN') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
