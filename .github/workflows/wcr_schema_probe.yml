@@ -1,0 +1,86 @@
+name: WCR schema probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/wcr_schema_probe.yml"
+      - "research/wcr/**"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install duckdb pandas pyarrow
+
+      - name: Download survivorship-safe A-share PIT database
+        run: |
+          curl -L --fail --retry 5 --retry-delay 5 \
+            -o ashare_pit.duckdb \
+            https://github.com/noblechang/a-share-data/releases/download/FREE_DATA_v0/ashare_pit.duckdb
+          ls -lh ashare_pit.duckdb
+          sha256sum ashare_pit.duckdb
+
+      - name: Inspect schema
+        run: |
+          mkdir -p output/wcr
+          python - <<'PY'
+          import duckdb, json, pathlib, traceback
+
+          db = "ashare_pit.duckdb"
+          out = pathlib.Path("output/wcr/schema_probe.json")
+          con = duckdb.connect(db, read_only=True)
+
+          tables = [r[0] for r in con.execute("SHOW TABLES").fetchall()]
+          payload = {"database": db, "tables": []}
+
+          for table in tables:
+              item = {"table": table}
+              try:
+                  cols = con.execute(f'DESCRIBE "{table}"').fetchdf()
+                  item["columns"] = cols.to_dict(orient="records")
+                  item["row_count"] = int(con.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0])
+
+                  names = [str(x) for x in cols["column_name"].tolist()]
+                  date_candidates = [x for x in names if any(k in x.lower() for k in ["date","time","day"])]
+                  item["date_candidates"] = date_candidates
+                  item["sample"] = con.execute(f'SELECT * FROM "{table}" LIMIT 3').fetchdf().astype(str).to_dict(orient="records")
+
+                  item["ranges"] = {}
+                  for c in date_candidates[:5]:
+                      try:
+                          mn,mx = con.execute(f'SELECT MIN("{c}"), MAX("{c}") FROM "{table}"').fetchone()
+                          item["ranges"][c] = [str(mn), str(mx)]
+                      except Exception as e:
+                          item["ranges"][c] = {"error": str(e)}
+              except Exception as e:
+                  item["error"] = str(e)
+                  item["trace"] = traceback.format_exc()
+              payload["tables"].append(item)
+
+          out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+          # Human-readable summary for logs
+          print("TABLE_COUNT", len(payload["tables"]))
+          for t in payload["tables"]:
+              print("\nTABLE", t["table"], "ROWS", t.get("row_count"))
+              print("COLS", [c.get("column_name") for c in t.get("columns", [])])
+              print("RANGES", t.get("ranges", {}))
+              print("SAMPLE", t.get("sample", [])[:1])
+          PY
+
+      - name: Upload schema probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: wcr-schema-probe
+          path: output/wcr/schema_probe.json
+          if-no-files-found: error
