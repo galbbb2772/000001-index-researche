@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install DuckDB
-        run: pip install --disable-pip-version-check duckdb==1.4.1
+        run: pip install --disable-pip-version-check duckdb==1.4.1 pandas numpy
 
       - name: Download survivorship-safe A-share snapshot
         run: |
@@ -35,9 +35,19 @@ jobs:
       - name: Inspect schema
         run: python research/wcr/inspect_db.py
 
+      - name: Run WCR Phase 1 annual transition analysis
+        run: python research/wcr/analyze_phase1.py
+
       - name: Upload schema artifact
         uses: actions/upload-artifact@v4
         with:
           name: wcr-db-schema
           path: wcr_artifacts/schema.json
+          retention-days: 7
+
+      - name: Upload WCR Phase 1 results
+        uses: actions/upload-artifact@v4
+        with:
+          name: wcr-phase1-results
+          path: wcr_phase1/
           retention-days: 7
