@@ -1,0 +1,98 @@
+{
+  "model": "RPC",
+  "version": "2.0",
+  "instrument": "000001.SH",
+  "frozen_at": "2026-11-15",
+  "status": "research_hypothesis_validation",
+  "data_regimes": {
+    "pre_2015_04": {
+      "preferred": "new_A_share_accounts / beginning_A_share_accounts",
+      "comparability": "within_regime_only"
+    },
+    "post_2015_04": {
+      "preferred": "new_investors / beginning_investor_count",
+      "fallback": "new_A_share_accounts_as_relative_proxy",
+      "fallback_tag": "PROXY_ACCOUNT_COUNT"
+    }
+  },
+  "top": {
+    "mps": {
+      "window_months": 6,
+      "baseline_months": 12,
+      "hot_threshold_multiple": 1.5,
+      "definition": "count of hot months in latest 6 months"
+    },
+    "top_risk": {
+      "all": [
+        "MPS >= 3",
+        "participation_slope_3m < 0",
+        "index_monthly_return < 0"
+      ]
+    },
+    "top_confirmed": {
+      "prerequisite": "top_risk",
+      "any": [
+        "index_monthly_return <= -0.10",
+        "compounded_2m_return <= -0.12"
+      ]
+    }
+  },
+  "bottom": {
+    "apathy_zone": {
+      "all": [
+        "participation_intensity <= rolling_24m_p20",
+        "trailing_6m_index_return <= -0.10"
+      ],
+      "semantics": "zone_not_entry_signal"
+    },
+    "rcf20": {
+      "prerequisite": "apathy_zone_previously_active",
+      "all": [
+        "index_close > MA20",
+        "margin_balance_20d_change > 0"
+      ],
+      "state": "RECOVERY_CANDIDATE",
+      "not": [
+        "BUY_SIGNAL",
+        "MAJOR_BOTTOM_CONFIRMED",
+        "BULL_MARKET_CONFIRMED"
+      ]
+    },
+    "csi": {
+      "status": "continuous_environment_score_pending_formal_freeze",
+      "candidates": [
+        "trailing_6m_price_damage",
+        "drawdown_from_12m_high",
+        "retail_participation_percentile"
+      ]
+    }
+  },
+  "walk_forward": {
+    "train": [
+      "2012-08",
+      "2013-06",
+      "2018-06"
+    ],
+    "oos": [
+      "2022-04"
+    ],
+    "forward_only_from": "2024-01",
+    "forbid_retuning_on_forward_period": true
+  },
+  "oos_2022": {
+    "threshold": 0,
+    "signal_date": "2022-05-30",
+    "delay_trading_days": 18,
+    "forward_return_63d": 0.02767810076657784,
+    "forward_return_126d": 0.005211078861628415,
+    "forward_return_252d": 0.026150660832121364,
+    "adverse_excursion_126d": -0.08116072732815505,
+    "adverse_excursion_252d": -0.08116072732815505
+  },
+  "known_bias_corrections": [
+    "2018-12 is not the first frozen Apathy signal",
+    "2022-10 is not the first frozen Apathy signal",
+    "2008 is pre-sample external check only",
+    "2026-10 SSE official monthly investor data was not available at freeze; official current-state calculations stop at 2026-09"
+  ]
+}
